@@ -549,6 +549,7 @@ form.addEventListener("submit", (e) => {
   // ---------- Confirmar: envia para o Apps Script ----------
   btnConfirmar.addEventListener("click", async () => {
     const dados = JSON.parse(overlay.dataset.payload || "{}");
+    console.log("Payload enviado:", dados);   // <-- ADICIONE ESTA LINHA
     btnConfirmar.disabled = true;
     btnConfirmar.textContent = "Enviando...";
 
