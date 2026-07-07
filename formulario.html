@@ -348,18 +348,19 @@
 
       <div class="row-2">
         <div class="field">
-          <label for="prazo">Prazo (dias)</label>
-          <input type="text" id="prazo" inputmode="numeric" maxlength="2" required>
-        </div>
-        <div class="field">
-          <label for="valorFrete">Valor do frete</label>
-          <input type="text" id="valorFrete" inputmode="numeric" placeholder="R$ 0,00" required>
-        </div>
-        <div class="field">
-          <label for="valorPago">Valor pago <span class="hint">(R$ 0,00 = grátis)</span></label>
-          <input type="text" id="valorPago" inputmode="numeric" placeholder="R$ 0,00" required>
-        </div>
+        <label for="prazo">Prazo (dias úteis) <span class="hint">(ou preencha a data ao lado)</span></label>
+        <input type="text" id="prazo" inputmode="numeric" maxlength="2">
       </div>
+      <div class="field">
+      <label for="dataEntregaPrevista">Data de entrega (prevista) <span class="hint">(ou preencha o prazo)</span></label>
+      <input type="date" id="dataEntregaPrevista">
+  </div>
+</div>
+
+<div class="field">
+  <label for="valorFrete">Valor do frete</label>
+  <input type="text" id="valorFrete" inputmode="numeric" placeholder="R$ 0,00" required>
+</div>
 
       <button type="submit" class="submit-btn" id="btnEnviar">Enviar dados</button>
       <div class="status-msg" id="statusMsg"></div>
@@ -402,6 +403,7 @@
   const btnCorrigir     = document.getElementById("btnCorrigir");
   const btnConfirmar    = document.getElementById("btnConfirmar");
   const statusMsg       = document.getElementById("statusMsg");
+  const dataEntregaInput = document.getElementById("dataEntregaPrevista");
 
   // ---------- Habilita/desabilita campos conforme transportadora ----------
   function toggleField(fieldEl, inputEl, enabled){
@@ -475,19 +477,26 @@
   }
 
   // ---------- Envio: valida e abre modal de confirmação ----------
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    document.getElementById("fieldCpf").classList.remove("invalid");
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  document.getElementById("fieldCpf").classList.remove("invalid");
 
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-    if (!cpfValido()) {
-      document.getElementById("fieldCpf").classList.add("invalid");
-      cpfInput.focus();
-      return;
-    }
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  // <-- AQUI: nova validação (Prazo ou Data de entrega)
+  if (!prazoInput.value.trim() && !dataEntregaInput.value) {
+    alert("Preencha o Prazo (dias) ou a Data de entrega (prevista).");
+    return;
+  }
+
+  if (!cpfValido()) {
+    document.getElementById("fieldCpf").classList.add("invalid");
+    cpfInput.focus();
+    return;
+  }
 
     const v = transportadora.value;
     const dados = {
@@ -501,7 +510,8 @@
       notaFiscal: v === "Rodonaves" ? notaInput.value.trim() : "",
       prazo: prazoInput.value,
       valorFrete: valorInput.value,
-      valorPago: valorPagoInput.value
+      valorPago: valorPagoInput.value,
+      dataEntregaPrevista: dataEntregaInput.value,
     };
 
     const linhas = [
@@ -514,7 +524,8 @@
       ["Nota fiscal", dados.notaFiscal || "-"],
       ["Prazo (dias)", dados.prazo],
       ["Valor do frete", dados.valorFrete],
-      ["Valor pago", dados.valorPago]
+      ["Valor pago", dados.valorPago],
+      ["Data de entrega (prevista)", dataEntregaInput.value ? formatarDataExibicao(dataEntregaInput.value) : "(calculada pelo prazo)"],
     ];
 
     confirmList.innerHTML = linhas.map(([k, v]) =>
