@@ -355,6 +355,10 @@
           <label for="valorFrete">Valor do frete</label>
           <input type="text" id="valorFrete" inputmode="numeric" placeholder="R$ 0,00" required>
         </div>
+        <div class="field">
+          <label for="valorPago">Valor pago <span class="hint">(R$ 0,00 = grátis)</span></label>
+          <input type="text" id="valorPago" inputmode="numeric" placeholder="R$ 0,00" required>
+        </div>
       </div>
 
       <button type="submit" class="submit-btn" id="btnEnviar">Enviar dados</button>
@@ -444,14 +448,19 @@
   });
 
   // ---------- Máscara de valor monetário ----------
-  valorInput.addEventListener("input", () => {
-    let v = valorInput.value.replace(/\D/g, "");
-    if (!v) { valorInput.value = ""; return; }
-    v = (parseInt(v, 10) / 100).toFixed(2) + "";
-    let [intPart, decPart] = v.split(".");
-    intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    valorInput.value = "R$ " + intPart + "," + decPart;
-  });
+  function aplicarMascaraMoeda(input) {
+    input.addEventListener("input", () => {
+      let v = input.value.replace(/\D/g, "");
+      if (!v) { input.value = ""; return; }
+      v = (parseInt(v, 10) / 100).toFixed(2) + "";
+      let [intPart, decPart] = v.split(".");
+      intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      input.value = "R$ " + intPart + "," + decPart;
+    });
+  }
+  const valorPagoInput = document.getElementById("valorPago");
+  aplicarMascaraMoeda(valorInput);
+  aplicarMascaraMoeda(valorPagoInput);
 
   // ---------- Código de rastreio: até 30 caracteres alfanuméricos ----------
   rastreioInput.addEventListener("input", () => {
@@ -491,7 +500,8 @@
       cpf: v === "Rodonaves" ? cpfInput.value.trim() : "",
       notaFiscal: v === "Rodonaves" ? notaInput.value.trim() : "",
       prazo: prazoInput.value,
-      valorFrete: valorInput.value
+      valorFrete: valorInput.value,
+      valorPago: valorPagoInput.value
     };
 
     const linhas = [
@@ -503,7 +513,8 @@
       ["CPF", dados.cpf || "-"],
       ["Nota fiscal", dados.notaFiscal || "-"],
       ["Prazo (dias)", dados.prazo],
-      ["Valor do frete", dados.valorFrete]
+      ["Valor do frete", dados.valorFrete],
+      ["Valor pago", dados.valorPago]
     ];
 
     confirmList.innerHTML = linhas.map(([k, v]) =>
@@ -553,6 +564,13 @@
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) overlay.classList.remove("show");
   });
+
+  document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && overlay.classList.contains("show")) {
+    e.preventDefault();
+    btnConfirmar.click();
+  }
+});
 </script>
 
 </body>
